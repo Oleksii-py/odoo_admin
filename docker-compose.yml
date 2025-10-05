@@ -1,0 +1,40 @@
+
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./odoo_admin
+      dockerfile: Dockerfile
+    container_name: django_web
+    env_file:
+      - .env
+    volumes:
+      - ./odoo_admin:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - db
+
+  redis:
+    image: redis:7-alpine
+    container_name: odoo_redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

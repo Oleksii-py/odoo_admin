@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+*.sqlite3
+*.db
+.DS_Store
+Thumbs.db
+*.lnk
+.vscode/
+.idea/
+*.swp
+Dockerfile
+.dockerignore
+*.log
