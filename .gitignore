@@ -33,8 +33,10 @@ ENV/
 Thumbs.db
 *.lnk
 
-*/migrations/*
-!*/migrations/__init__.py
+**/migrations/*.py
+!**/migrations/__init__.py
+htmlcov/
+*.bak
 
 htmlcov/
 .coverage
