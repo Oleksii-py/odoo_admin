@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
-from odoo_admin.redis_utils import block_token
+# from odoo_admin.redis_utils import block_token
+from ..redis_cache import block_token
 
 User = get_user_model()
 

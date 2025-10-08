@@ -1,18 +1,21 @@
 from datetime import timezone
+import uuid
 
 from django.db import models
 from django.contrib.auth import get_user_model
 
-from employees.models import Worker
-
 User = get_user_model()
-
 
 # Create your models here.
 class Accommodation(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     address = models.TextField(blank=True)
-    # manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_accommodations')
+    phone = models.CharField(max_length=64, blank=True)
+    email = models.EmailField(blank=True)
+    manager_id = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="managed_accommodations"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -20,7 +23,8 @@ class Accommodation(models.Model):
 
 
 class Room(models.Model):
-    accommodation = models.ForeignKey(
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    accommodation_id = models.ForeignKey(
         Accommodation, on_delete=models.PROTECT, related_name="rooms"
     )
     name = models.CharField(max_length=100)
@@ -28,10 +32,10 @@ class Room(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("accommodation", "name")
+        unique_together = ("accommodation_id", "name")
 
     def __str__(self):
-        return f"{self.accommodation.name} / {self.name}"
+        return f"{self.accommodation_id.name} / {self.name}"
 
     @property
     def occupied_beds(self):
@@ -44,14 +48,15 @@ class Room(models.Model):
 
 
 class HousingAssignment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     STATE_CHOICES = [
         ("active", "Active"),
         ("past", "Past"),
     ]
-    worker = models.ForeignKey(
-        Worker, on_delete=models.PROTECT, related_name="housing_assignments"
+    worker_id = models.ForeignKey(
+        "employees.Worker", on_delete=models.PROTECT, related_name="housing_assignments"
     )
-    room = models.ForeignKey(Room, on_delete=models.PROTECT, related_name="assignments")
+    room_id = models.ForeignKey(Room, on_delete=models.PROTECT, related_name="assignments")
     check_in_date = models.DateField()
     check_out_date = models.DateField(null=True, blank=True)
     state = models.CharField(max_length=10, choices=STATE_CHOICES, default="active")
@@ -62,7 +67,7 @@ class HousingAssignment(models.Model):
         ordering = ["-check_in_date"]
 
     def __str__(self):
-        return f"{self.worker} -> {self.room} ({self.check_in_date} - {self.check_out_date or '...'})"
+        return f"{self.worker_id} -> {self.room_id} ({self.check_in_date} - {self.check_out_date or '...'})"
 
     def mark_checked_out(self, out_date=None):
         if out_date is None:
@@ -70,3 +75,5 @@ class HousingAssignment(models.Model):
         self.check_out_date = out_date
         self.state = "past"
         self.save()
+
+    

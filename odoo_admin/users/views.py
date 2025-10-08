@@ -16,19 +16,20 @@ from .services.auth import login_user, refresh_tokens, logout_tokens
 User = get_user_model()
 
 
-class RegisterView(generics.CreateAPIView):
+class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
-    serializer_class = RegisterSerializer
 
-    def perform_create(self, serializer):
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        return register_user(
+        result = register_user(
             username=data["username"],
             email=data["email"],
             password=data["password"],
-            role=data.get("role", "user"),
         )
-
+        return Response(result)
+            
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -41,13 +42,8 @@ class LoginView(APIView):
         if not result:
             return Response({"detail": "Invalid credentials"}, status=401)
 
-        return Response(
-            {
-                "access": result["access"],
-                "refresh": result["refresh"],
-            }
-        )
-
+        return Response(result)
+            
 
 class RefreshView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -56,12 +52,7 @@ class RefreshView(APIView):
         serializer = RefreshSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         result = refresh_tokens(serializer.validated_data["refresh"])
-        return Response(
-            {
-                "access": result["access"],
-                "refresh": result["refresh"],
-            }
-        )
+        return Response(result)
 
 
 class LogoutView(APIView):

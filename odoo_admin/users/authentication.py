@@ -1,6 +1,7 @@
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import exceptions
-from odoo_admin.redis_utils import is_token_blocked
+# from odoo_admin.redis_utils import is_token_blocked
+from .redis_cache import is_token_blocked
 
 
 class RedisJWTAuthentication(JWTAuthentication):
